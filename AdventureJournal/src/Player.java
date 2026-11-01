@@ -17,6 +17,10 @@ public abstract class Player extends Character {
     public abstract int getSkillCost();
     public abstract int skillRawDamage();
     public boolean skillIgnoresDef() { return false; }
+    /** Projectile image (images/skills/...) flown at the enemy when the skill is used. */
+    public abstract String getSkillProjectile();
+    /** Burst image (images/skills/...) shown on the enemy when the projectile lands. */
+    public abstract String getSkillHitEffect();
     public boolean canUseSkill() { return mp >= getSkillCost(); }
 
     public int getGold() { return gold; }

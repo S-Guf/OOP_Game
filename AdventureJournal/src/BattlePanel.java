@@ -19,6 +19,15 @@ public class BattlePanel extends JPanel {
     private final JButton btnDefend = UI.button("DEFEND");
     private Image background;
 
+    // skill projectile + hit effect state (drawn by StagePanel)
+    private Image projImg;
+    private boolean projVisible = false;
+    private double projX, projY;
+    private int projH = 90;
+    private Image fxImg;
+    private int fxCx, fxCy, fxSize;
+    private float fxAlpha = 1f;
+
     public BattlePanel(GameFrame game, Player player, Monster monster) {
         this.game = game;
         this.player = player;
@@ -80,12 +89,16 @@ public class BattlePanel extends JPanel {
             pierce = false;
             print(player.getName() + " attacks!");
         }
-        dash(player, +1, resume -> {
+        final Consumer<Runnable> onHit = resume -> {
             int d = monster.takeDamage(raw, pierce);
             print(monster.getName() + " takes " + d + " damage.");
             print(monster.getName() + " HP: " + monster.getHp());
+            if (skill) playFx(player.getSkillHitEffect(), stage.monsterMidX(), stage.monsterMidY(), 180);
+            else       playFx("skills/Impact", stage.monsterMidX(), stage.monsterMidY(), 110);
             flash(monster, resume);
-        }, this::afterPlayerAction);
+        };
+        if (skill) castSkill(onHit, this::afterPlayerAction);          // Warrior: sword wave / Mage: fireball
+        else       dash(player, +1, onHit, this::afterPlayerAction);   // normal attack: dash
     }
 
     private void doDefend() {
@@ -100,6 +113,7 @@ public class BattlePanel extends JPanel {
         for (Item it : Item.ALL) {
             int n = player.getItemCount(it);
             JMenuItem mi = new JMenuItem(it.getName() + " x" + n + "   (" + it.describe() + ")");
+            mi.setIcon(Sprites.icon(it.getImageName(), 28));
             mi.setEnabled(n > 0);
             mi.addActionListener(e -> useItem(it));
             pm.add(mi);
@@ -130,6 +144,7 @@ public class BattlePanel extends JPanel {
     private void monsterTurn() {
         print(monster.getName() + " attacks!");
         dash(monster, -1, resume -> {
+            playFx("skills/MonsterClaw", stage.heroMidX(), stage.heroMidY(), 150);
             int d = player.takeDamage(monster.rollAttack());
             print(player.getName() + " takes " + d + " damage" + (player.defending ? " (defended)" : "") + ".");
             print(player.getName() + " HP: " + player.getHp() + "/" + player.getMaxHp());
@@ -173,6 +188,57 @@ public class BattlePanel extends JPanel {
         t.start();
     }
 
+    /** Skill animation: lean back, throw the projectile (sword wave / fireball) across the stage, then onHit. */
+    private void castSkill(Consumer<Runnable> onHit, Runnable done) {
+        projImg = Sprites.get(player.getSkillProjectile());
+        projH = player.getSkillProjectile().contains("Fireball") ? 80 : 100;
+        final Timer t = new Timer(15, null);
+        final int[] frame = {0};
+        t.addActionListener(e -> {
+            int f = ++frame[0];
+            if (f <= 8) {
+                player.offsetX = -f * 2;                 // wind-up
+            } else if (f == 9) {
+                player.offsetX = 14;                     // release: thrust forward
+                projVisible = true;
+                projX = stage.heroFrontX();
+                projY = stage.heroMidY();
+            } else if (projVisible) {
+                player.offsetX = Math.max(0, player.offsetX - 2);
+                projX += 24;
+                if (projX >= stage.monsterMidX() - monster.getSpriteW() / 4) {   // reached the enemy
+                    projVisible = false;
+                    player.offsetX = 0;
+                    t.stop();
+                    stage.repaint();
+                    onHit.accept(done);
+                    return;
+                }
+            }
+            stage.repaint();
+        });
+        t.start();
+    }
+
+    /** Expanding + fading effect image centred at (cx, cy). Runs in parallel with other animations. */
+    private void playFx(String name, int cx, int cy, int size) {
+        Image img = Sprites.get(name);
+        if (img == null) return;
+        fxImg = img; fxCx = cx; fxCy = cy;
+        final int steps = 10;
+        final Timer t = new Timer(30, null);
+        final int[] n = {0};
+        t.addActionListener(e -> {
+            n[0]++;
+            float p = n[0] / (float) steps;
+            fxSize = (int) (size * (0.6 + 0.7 * p));
+            fxAlpha = Math.max(0f, 1f - p * p);
+            if (n[0] >= steps) { fxImg = null; t.stop(); }
+            stage.repaint();
+        });
+        t.start();
+    }
+
     /** Blink red twice, then restore the normal colours. */
     private void flash(Character target, Runnable done) {
         Timer t = new Timer(90, null);
@@ -212,6 +278,15 @@ public class BattlePanel extends JPanel {
     private class StagePanel extends JPanel {
         StagePanel() { setPreferredSize(new Dimension(900, 400)); }
 
+        int heroX()       { return (int) (getWidth() * 0.12); }
+        int monsterX()    { return getWidth() - (int) (getWidth() * 0.12) - monster.getSpriteW(); }
+        int ground()      { return getHeight() - 70; }
+        int heroMidX()    { return heroX() + player.offsetX + player.getSpriteW() / 2; }
+        int heroMidY()    { return ground() - player.getSpriteH() / 2; }
+        int heroFrontX()  { return heroX() + player.offsetX + (int) (player.getSpriteW() * 0.85); }
+        int monsterMidX() { return monsterX() + monster.offsetX + monster.getSpriteW() / 2; }
+        int monsterMidY() { return ground() - monster.getSpriteH() / 2; }
+
         @Override protected void paintComponent(Graphics g0) {
             super.paintComponent(g0);
             Graphics2D g = (Graphics2D) g0.create();
@@ -219,7 +294,7 @@ public class BattlePanel extends JPanel {
             int w = getWidth(), h = getHeight();
             g.drawImage(background,0, 0,w, h,this);/////
             int ground = h - 70;
-            g.setColor(new Color(45, 58, 48));
+            g.setColor(Color.BLACK);
             g.fillRect(0, ground, w, 70);
 
             g.setColor(Color.WHITE);
@@ -228,6 +303,16 @@ public class BattlePanel extends JPanel {
 
             drawFighter(g, player, (int) (w * 0.12), ground, true);
             drawFighter(g, monster, w - (int) (w * 0.12) - monster.getSpriteW(), ground, false);
+
+            g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+            if (projVisible && projImg != null) {       // flying sword wave / fireball
+                int ph = projH, pw = ph * projImg.getWidth(this) / Math.max(1, projImg.getHeight(this));
+                g.drawImage(projImg, (int) projX - pw / 2, (int) projY - ph / 2, pw, ph, this);
+            }
+            if (fxImg != null) {                        // hit effect
+                g.setComposite(AlphaComposite.SrcOver.derive(Math.min(1f, Math.max(0f, fxAlpha))));
+                g.drawImage(fxImg, fxCx - fxSize / 2, fxCy - fxSize / 2, fxSize, fxSize, this);
+            }
             g.dispose();
         }
 
@@ -237,7 +322,8 @@ public class BattlePanel extends JPanel {
                     c.isHurtFlash, c.getPlaceholderColor());
             g.setColor(Color.WHITE);
             g.setFont(UI.BOLD);
-            g.drawString(c.getName() + "  Lv." + c.getLevel(), x, ground + 18);
+            String title = (c instanceof Player) ? c.getName() + "  Lv." + c.getLevel() : c.getName();
+            g.drawString(title, x, ground + 18);
             bar(g, x, ground + 24, c.getSpriteW(), 12, c.getHp(), c.getMaxHp(),
                     new Color(220, 60, 60), "HP " + c.getHp() + "/" + c.getMaxHp());
             if (showMp)

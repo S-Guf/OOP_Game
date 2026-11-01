@@ -13,6 +13,8 @@ public class Item {
     }
 
     public String getName() { return name; }
+    /** Icon file: images/items/<Name>.png */
+    public String getImageName() { return "items/" + name; }
     public int getHp() { return hp; }
     public int getMp() { return mp; }
     public int getPrice() { return price; }

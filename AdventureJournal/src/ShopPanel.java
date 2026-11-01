@@ -28,6 +28,9 @@ public class ShopPanel extends JPanel {
             JPanel row = new JPanel(new BorderLayout(20, 0));
             row.setBackground(UI.PANEL);
             row.setBorder(BorderFactory.createEmptyBorder(10, 16, 10, 16));
+            JLabel icon = new JLabel(Sprites.icon(it.getImageName(), 56));
+            icon.setPreferredSize(new Dimension(64, 64));
+            row.add(icon, BorderLayout.WEST);
             row.add(UI.label(it.getName() + "   " + it.describe() + "   -   " + it.getPrice() + " G",
                     UI.BODY, Color.WHITE), BorderLayout.CENTER);
             JLabel count = UI.label("", UI.BODY, UI.GOLD);

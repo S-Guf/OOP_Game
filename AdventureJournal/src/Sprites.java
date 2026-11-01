@@ -25,6 +25,23 @@ public final class Sprites {
         return img;
     }
 
+    /** Returns images/<name>.png (e.g. "items/Potion", "skills/Fireball") or null if missing. */
+    public static BufferedImage get(String name) { return load(name); }
+
+    /** Smoothly scaled square icon (keeps aspect ratio) or null if the file is missing. */
+    public static javax.swing.ImageIcon icon(String name, int size) {
+        BufferedImage img = load(name);
+        if (img == null) return null;
+        double s = Math.min((double) size / img.getWidth(), (double) size / img.getHeight());
+        int w = Math.max(1, (int) (img.getWidth() * s)), h = Math.max(1, (int) (img.getHeight() * s));
+        BufferedImage out = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        Graphics2D g = out.createGraphics();
+        g.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+        g.drawImage(img, (size - w) / 2, (size - h) / 2, w, h, null);
+        g.dispose();
+        return new javax.swing.ImageIcon(out);
+    }
+
     public static void draw(Graphics2D g, String name, int x, int y, int w, int h,
                             boolean flash, Color placeholderColor) {
         BufferedImage buf = new BufferedImage(w, h, BufferedImage.TYPE_INT_ARGB);

@@ -7,8 +7,10 @@ public class Mage extends Player {
         color = new Color(60, 70, 160);
     }
     @Override public String getSkillName() { return "Fireball"; }
+    @Override public String getSkillProjectile() { return "skills/Fireball"; }
+    @Override public String getSkillHitEffect() { return "skills/FireBurst"; }
     @Override public int getSkillCost() { return 15; }
-    @Override public int skillRawDamage() { return atk * 5 / 2; }
+    @Override public int skillRawDamage() { return atk * 8 / 2; }
     @Override public boolean skillIgnoresDef() { return true; }
 
     @Override protected String applyGrowth() {

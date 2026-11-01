@@ -5,7 +5,7 @@ import java.util.List;
 
 /** Main window + game state machine (Menu -> Select -> Map -> Battle/Shop -> Result). */
 public class GameFrame extends JFrame {
-    public static final String[] NODES = {"Start", "Battle", "Battle", "Battle", "Boss"};
+    public static final String[] NODES = {"Start", "Battle", "Battle", "Battle","Boss"};
     public static final int SHOP_NODE = 2;   // shop branches off the second battle node
 
     private Player player;
@@ -133,19 +133,25 @@ public class GameFrame extends JFrame {
         pos++;
         boolean last = pos == NODES.length - 1;
         if (last) lines.add("<b>You cleared the adventure!</b>");
-        resultScreen(last ? "BOSS DEFEATED!" : "VICTORY!", new Color(120, 220, 120), lines,
+        resultScreen(true, last ? "BOSS DEFEATED!" : "VICTORY!", new Color(120, 220, 120), lines,
                 last ? "MAIN MENU" : "NEXT", last ? this::showMenu : this::showMap);
     }
 
     public void onBattleLost() {
-        resultScreen("DEFEAT", new Color(230, 80, 80),
+        resultScreen(false, "DEFEAT", new Color(230, 80, 80),
                 List.of("Your journey ends here..."), "MAIN MENU", this::showMenu);
     }
 
-    private void resultScreen(String title, Color tc, List<String> lines, String btnText, Runnable action) {
-        JPanel box = new JPanel();
+    private void resultScreen(boolean win, String title, Color tc, List<String> lines, String btnText, Runnable action) {
+        JPanel box = new JPanel() {
+            @Override protected void paintComponent(Graphics g) {
+                g.setColor(getBackground());
+                g.fillRect(0, 0, getWidth(), getHeight());
+            }
+        };
+        box.setOpaque(false);
         box.setLayout(new BoxLayout(box, BoxLayout.Y_AXIS));
-        box.setBackground(UI.PANEL);
+        box.setBackground(new Color(20, 20, 34, 205));   // semi-transparent so the background shows through
         box.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(tc, 3), BorderFactory.createEmptyBorder(30, 60, 30, 60)));
         box.add(UI.center(UI.label(title, UI.TITLE, tc)));
@@ -157,7 +163,13 @@ public class GameFrame extends JFrame {
         JButton b = UI.center(UI.button(btnText));
         b.addActionListener(e -> action.run());
         box.add(b);
-        JPanel root = new JPanel(new GridBagLayout());
+        final Image bg = Sprites.get(win ? "ResultWin" : "ResultLose");
+        JPanel root = new JPanel(new GridBagLayout()) {
+            @Override protected void paintComponent(Graphics g) {
+                super.paintComponent(g);
+                if (bg != null) g.drawImage(bg, 0, 0, getWidth(), getHeight(), this);
+            }
+        };
         root.setBackground(UI.BG);
         root.add(box);
         setScreen(root);

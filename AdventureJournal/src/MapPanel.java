@@ -41,7 +41,7 @@ public class MapPanel extends JPanel {
             for (int i = 0; i < n; i++) xs[i] = margin + i * (w - 2 * margin - bw) / (n - 1);
             int sx = xs[GameFrame.SHOP_NODE], shopY = y + bh + 70;
 
-            g.setStroke(new BasicStroke(4));
+            g.setStroke(new BasicStroke(3));
             g.setColor(new Color(130, 130, 150));
             for (int i = 0; i < n - 1; i++) g.drawLine(xs[i] + bw, y + bh / 2, xs[i + 1], y + bh / 2);
             g.drawLine(sx + bw / 2, y + bh, sx + bw / 2, shopY);
