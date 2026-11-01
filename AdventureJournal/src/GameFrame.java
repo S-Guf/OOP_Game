@@ -34,7 +34,6 @@ public class GameFrame extends JFrame {
         col.setLayout(new BoxLayout(col, BoxLayout.Y_AXIS));
         col.setOpaque(false);
         col.add(UI.center(UI.label("Adventure Journal", UI.TITLE, Color.WHITE)));
-        col.add(UI.center(UI.label("\u0E1A\u0E31\u0E19\u0E17\u0E36\u0E01\u0E01\u0E32\u0E23\u0E1C\u0E08\u0E0D\u0E20\u0E31\u0E22", UI.HEAD, UI.GOLD)));
         col.add(Box.createVerticalStrut(40));
         JButton start = UI.center(UI.button("Start"));
         JButton exit = UI.center(UI.button("Exit"));
