@@ -11,6 +11,10 @@ public class GameFrame extends JFrame {
     private Player player;
     private int pos = 0;   // index of the node the player is standing on
 
+    public int getPos() {
+    return pos;
+    }
+
     public GameFrame() {
         super("Adventure Journal");
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -42,10 +46,18 @@ public class GameFrame extends JFrame {
         col.add(start);
         col.add(Box.createVerticalStrut(12));
         col.add(exit);
-        JPanel root = new JPanel(new GridBagLayout());
-        root.setBackground(UI.BG);
-        root.add(col);
-        setScreen(root);
+        JPanel root = new JPanel(new GridBagLayout()) {
+    Image bg = new ImageIcon("images/MainBackground.png").getImage();
+
+    @Override
+    protected void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        g.drawImage(bg, 0, 0, getWidth(), getHeight(), this);
+        }
+    };
+
+    root.add(col);
+    setScreen(root);
     }
 
     public void showSelect() {

@@ -17,6 +17,7 @@ public class BattlePanel extends JPanel {
     private final JButton btnSkill;
     private final JButton btnItem = UI.button("ITEM");
     private final JButton btnDefend = UI.button("DEFEND");
+    private Image background;
 
     public BattlePanel(GameFrame game, Player player, Monster monster) {
         this.game = game;
@@ -26,6 +27,8 @@ public class BattlePanel extends JPanel {
 
         setLayout(new BorderLayout());
         setBackground(UI.BG);
+
+        background = new ImageIcon("images/Stage" + (game.getPos() + 1) + ".png").getImage();
 
         JPanel buttons = new JPanel(new GridLayout(2, 2, 8, 8));
         buttons.setOpaque(false);
@@ -214,8 +217,7 @@ public class BattlePanel extends JPanel {
             Graphics2D g = (Graphics2D) g0.create();
             g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
             int w = getWidth(), h = getHeight();
-            g.setPaint(new GradientPaint(0, 0, new Color(40, 50, 90), 0, h, new Color(20, 24, 40)));
-            g.fillRect(0, 0, w, h);
+            g.drawImage(background,0, 0,w, h,this);/////
             int ground = h - 70;
             g.setColor(new Color(45, 58, 48));
             g.fillRect(0, ground, w, 70);
