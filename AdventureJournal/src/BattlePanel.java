@@ -37,7 +37,7 @@ public class BattlePanel extends JPanel {
         setLayout(new BorderLayout());
         setBackground(UI.BG);
 
-        background = new ImageIcon("images/Stage" + (game.getPos() + 1) + ".png").getImage();
+        background = Sprites.get("Stage" + (game.getPos() + 1));   // works from folder or from inside the .jar
 
         JPanel buttons = new JPanel(new GridLayout(2, 2, 8, 8));
         buttons.setOpaque(false);

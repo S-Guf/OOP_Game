@@ -47,7 +47,7 @@ public class GameFrame extends JFrame {
         col.add(Box.createVerticalStrut(12));
         col.add(exit);
         JPanel root = new JPanel(new GridBagLayout()) {
-    Image bg = new ImageIcon("images/MainBackground.png").getImage();
+    Image bg = Sprites.get("MainBackground");   // works from folder or from inside the .jar
 
     @Override
     protected void paintComponent(Graphics g) {

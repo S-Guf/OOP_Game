@@ -17,9 +17,14 @@ public final class Sprites {
     private static BufferedImage load(String name) {
         if (CACHE.containsKey(name)) return CACHE.get(name);
         BufferedImage img = null;
-        File f = new File("images/" + name + ".png");
+        File f = new File("images/" + name + ".png");      // 1) external folder (lets you swap art without rebuilding)
         if (f.exists()) {
             try { img = ImageIO.read(f); } catch (Exception ignored) { }
+        }
+        if (img == null) {                                  // 2) bundled inside the .jar
+            try (java.io.InputStream in = Sprites.class.getResourceAsStream("/images/" + name + ".png")) {
+                if (in != null) img = ImageIO.read(in);
+            } catch (Exception ignored) { }
         }
         CACHE.put(name, img);
         return img;
